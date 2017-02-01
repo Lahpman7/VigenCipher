@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title of the document</title>
+</head>
+
+<body>
+    <form>
+        <input id="plain" type="text">
+        <button type="button" id="check">Test</button> <br>
+        <span id="color"></span>
+    </form>
+</body>
+
+
+<script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script>
+    $(document).ready(function() {
+        var goodColor = "#66cc66";
+        var badColor = "#ff6666";
+        const key = "crypto";
+        //above is the key we will be using
+        
+        //this function converts numbers into letters of the alphabet, with the help of JavaScript functions
+        function numToAlpha(msg, key) {
+            var total = msg + key;
+            if (total > 26) {
+                total = Math.abs(26 - total);
+            }
+            return String.fromCharCode(total + 96);
+        }
+        
+        //puts numerical value of the characters in the key string, into an array and returns it
+        function keyUpdate(key) {
+            var storage = [];
+            for (var r = 0; r < key.length; r++) {
+                storage.push(key.charCodeAt(r) - 96);
+            }
+            return storage;
+        }
+
+        //puts numerical value of the characters in the plaintext message into an array to return
+        //converts message into lowercase letters, takes into account spaces (less than 0)
+        function msgUpdate(message) {
+            var numericAlphabet = [];
+            message = message.toLowerCase();
+            for (var x = 0; x < message.length; x++) {
+                if (message.charCodeAt(x) - 96 < 0) {
+                    numericAlphabet.push(message.charCodeAt(x));
+                }
+                else {
+                    numericAlphabet.push(message.charCodeAt(x) - 96);
+                }
+            }
+            return numericAlphabet;
+        }
+        //adds the letter index values from the key (starting from 1) to the plaintext, and returns message encrypted
+        function encrypt(message, key) {
+            var keyUpdatedNumbers = keyUpdate(key); //length is 4, our message is 16
+            var numericAlphabetMsg = msgUpdate(message);
+            var encryptedMessage = [];
+            var r = 0;
+            for (var i = 0; i < numericAlphabetMsg.length; i++) {
+                if (r > keyUpdatedNumbers.length - 1) {
+                    r = 0;
+                }
+                encryptedMessage.push(numToAlpha(numericAlphabetMsg[i], keyUpdatedNumbers[r]));
+                r++;
+            }
+            return encryptedMessage;
+            //we have both message and key in numerically (a = 1 , b = 2 ...etc)
+        }
+        //jQuery/javascript, onClick function that checks the size of entered text, 
+        // if size is ok, then encrypt function is called.
+        $("#check").click(function() {
+            if ($("#plain").val().length < 16 || $('#plain').val().length > 16) {
+                document.getElementById("color").style.color = badColor;
+                document.getElementById("color").innerHTML = "invalid plaintext size!";
+            }
+            else {
+                document.getElementById("color").style.color = goodColor;
+                document.getElementById("color").innerHTML = "valid plaintext entered";
+                var s = $("#plain").val();
+                var encoder = new TextEncoder("utf-8");
+                var bytes = encoder.encode(s);
+                //console.log(bytes);
+                //lower case alphabet, starting at a is given value of 97
+                //upper case alphabet, starting at A is given value of 65
+                if (bytes.byteLength === 16) {
+                    console.log("128 bit plaintext!");
+                    //console.log(encrypt(s,key));
+                    //s = "WHATANICEDAYTODAY";
+                    var arr = encrypt(s, key);
+                    var string = "";
+                    for (var i = 0; i < arr.length; i++) {
+                        string += arr[i];
+                    }
+                    alert("Encrypted message: " + string);
+                }
+                else {
+                    console.log("Not 128 bits..")
+                }
+            }
+
+        });
+    });
+</script>
+</html>
